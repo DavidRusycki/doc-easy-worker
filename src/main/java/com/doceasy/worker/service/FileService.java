@@ -1,66 +1,43 @@
 package com.doceasy.worker.service;
 
+import java.io.File;
+import java.io.FileOutputStream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.doceasy.worker.dto.FileProcessQueueDTO;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import com.doceasy.worker.entity.SubDocument;
 
 @Service
 public class FileService {
 
 	private Logger log = LoggerFactory.getLogger(FileService.class);
 	
-	/**
-	 * Realiza o processamento dos arquivos
-	 * @param payload
-	 * @return Boolean - Indicando o sucesso da operação
-	 */
-	public Boolean process(String payload) {
-		log.debug("iniciando montagem do objeto json");
-		
-		Boolean result = false;
+	public File createTempFile(SubDocument document) {
+		log.debug("criando o arquivo temporario uuid: "+ document.getUuid());
 		
 		try {
+			File tempFile = File.createTempFile("process", ".pdf");
+			tempFile.deleteOnExit();
+
+			FileOutputStream fos = new FileOutputStream(tempFile);
 			
-			ObjectMapper mapper = new ObjectMapper();
-			FileProcessQueueDTO dto = mapper.readValue(payload, FileProcessQueueDTO.class);
-			log.debug("json do registro "+dto.getUuidDocument().toString()+" montado com sucesso");
-			log.debug("documento "+dto.getUuidDocument().toString()+" e composto por " + dto.getListUuidSubDocuments().size());
+			log.debug("iniciando escrita do conteudo no arquivo temporario");
+			fos.write(document.getContent());
+			log.debug("finalizando a escrita no arquivo temporario");
+			fos.close();
 			
-			// buscar os arquivos
+			log.debug("arquivo temporario criado com sucesso");
 			
-			log.debug("iniciando busca do conteudo dos arquivos");
-			
-			// Criar o array com os FileInputStream dos arquivos
-			
-			log.debug("iniciando criacao de arquivos temporarios");
-			
-			// realizar a request para junção
-			
-			log.debug("iniciando request para juncao");
-			
-			log.debug("juncao realizada com sucesso");
-			
-			// Receber retorno do arquivo de junção
-			
-			log.debug("salvando conteudo da juncao");
-			
-			// Adicionar esse conteúdo no banco de dados e mudar o status do arquivo.
-			
-			log.debug("removendo subdocumentos");
-			
-			result = true;
+			return tempFile;
 			
 		} catch (Exception e) {
-			log.error("falha ao processar o registro da fila");
+			log.debug("falha ao criar o arquivo temporario");
 			log.error(e.getMessage());
-			result = false;
+			
+			return null;
 		}
-		
-		return result;
 	}
 	
 }

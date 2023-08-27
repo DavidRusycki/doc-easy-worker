@@ -1,3 +1,4 @@
+
 package com.doceasy.worker.queue;
 
 import org.slf4j.Logger;
@@ -7,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
-import com.doceasy.worker.service.FileService;
+import com.doceasy.worker.service.ProcessorService;
 
 @Service
 public class Subscriber {
@@ -15,7 +16,7 @@ public class Subscriber {
 	private Logger log = LoggerFactory.getLogger(Subscriber.class);
 	
 	@Autowired
-	private FileService service;
+	private ProcessorService service;
 	
 	/**
 	 * Recebe as informações do registro da fila de processamento e

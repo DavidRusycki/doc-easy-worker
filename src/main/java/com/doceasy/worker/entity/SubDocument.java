@@ -25,4 +25,15 @@ public class SubDocument {
 	
 	private byte[] content;
 	
+	/**
+	 * Limpa a área de conteúdo.
+	 * Usado inicialmente para não manter o conteúdo do arquivo em memória e Somente em disco.
+	 * @return
+	 */
+	public Boolean clearContent() {
+		this.content = null;
+		
+		return true;
+	}
+	
 }

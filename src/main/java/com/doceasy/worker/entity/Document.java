@@ -38,22 +38,6 @@ public class Document {
 	private Integer status;
 	
 	private byte[] content;
-
-	/**
-	 * Retorna a lista de InputStream
-	 * @param listMultipart
-	 * @return
-	 * @throws IOException 
-	 */
-	public static List<InputStream> getListInputStream(List<MultipartFile> listMultipart) throws IOException {
-		List<InputStream> list = new ArrayList<InputStream>(); 
-		
-		for (MultipartFile multipartFile : listMultipart) {
-			list.add(multipartFile.getInputStream());
-		}
-		
-		return list;
-	}
 	
 	public static DocumentDTO toDTO(Document document) {
 		DocumentDTO dto = new DocumentDTO();
