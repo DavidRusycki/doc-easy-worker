@@ -3,6 +3,12 @@ scrape_configs:
     metrics_path: '/actuator/prometheus'
     scrape_interval: 2s
     static_configs:
-      - targets: ['192.168.1.15:8080'] # Como a minha aplicação não está no container, eu tenho que colocar o IP da minha máquina para que o Prometheus consiga baixar coisas da minha aplicação.
+      - targets: ['192.168.1.15:8282'] # Como a minha aplicação não está no container, eu tenho que colocar o IP da minha máquina para que o Prometheus consiga baixar coisas da minha aplicação.
         labels:
           application: 'doceasy-worker'
+      - targets: ['192.168.1.15:8081'] # Como a minha aplicação não está no container, eu tenho que colocar o IP da minha máquina para que o Prometheus consiga baixar coisas da minha aplicação.
+        labels:
+          application: 'doceasy-middler'
+      - targets: ['192.168.1.15:8080'] # Como a minha aplicação não está no container, eu tenho que colocar o IP da minha máquina para que o Prometheus consiga baixar coisas da minha aplicação.
+        labels:
+          application: 'metamorphic-pdf'

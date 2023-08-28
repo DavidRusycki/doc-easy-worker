@@ -14,8 +14,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.doceasy.middler.enums.DocumentStatusEnum;
 import com.doceasy.worker.dto.FileProcessQueueDTO;
+import com.doceasy.worker.entity.Document;
 import com.doceasy.worker.entity.SubDocument;
+import com.doceasy.worker.repository.DocumentRepository;
 import com.doceasy.worker.repository.SubDocumentRepository;
 
 @Service
@@ -25,6 +28,9 @@ public class DocumentService {
 	
 	@Autowired
 	public SubDocumentRepository repository;
+	
+	@Autowired
+	public DocumentRepository documentRepository;
 	
 	@Autowired
 	private FileService fileService;
@@ -60,12 +66,75 @@ public class DocumentService {
 	}
 	
 	/**
+	 * Salva o conteúdo novo no banco de dados.
+	 * Altera a situação do documento para processado.
+	 * @param file
+	 * @param uuid
+	 * @return
+	 * @throws Exception
+	 */
+	public Boolean saveDocument(UUID uuid, File file) throws Exception {
+		
+		FileInputStream fis = new FileInputStream(file);
+		Optional<Document> optional = documentRepository.findById(uuid);
+		Document document = optional.get();
+		document.setContent(fis.readAllBytes());
+		fis.close();
+		
+		documentRepository.save(document);
+		
+		return true;
+	}
+	
+	/**
+	 * Altera o status do documento para processado.
+	 * @param uuid
+	 * @return
+	 */
+	public Boolean finish(UUID uuid) {
+		Optional<Document> optional = documentRepository.findById(uuid);
+		Document document = optional.get();
+		document.setStatus(DocumentStatusEnum.FINALIZADO.getValue());
+		documentRepository.save(document);
+		
+		return true;
+	}
+	
+	/**
+	 * Deleta os subdocumentos do banco de dados.
+	 * @param dto
+	 * @return
+	 */
+	public Boolean deleteAllSubDocumentsFromDataBase(FileProcessQueueDTO dto) {
+		List<UUID> list = dto.getListUuidSubDocuments();
+		
+		for (UUID uuid : list) {
+			repository.deleteById(uuid);
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Deleta os arquivos do disco.
+	 * @param files
+	 * @return
+	 */
+	public Boolean deleteAllSubDocumentsFromDisk(List<File> files) {
+		for (File file : files) {
+			file.delete();			
+		}
+		
+		return true;
+	}
+	
+	/**
 	 * Retorna se o documento existe no banco
 	 * @param uuid
 	 * @return
 	 */
 	public Boolean documentExists(UUID uuid) {
-		return repository.existsById(uuid);
+		return documentRepository.existsById(uuid);
 	}
 	
 	/**

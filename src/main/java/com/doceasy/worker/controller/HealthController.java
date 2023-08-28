@@ -14,14 +14,10 @@ public class HealthController {
 	
 	private Logger log = LoggerFactory.getLogger(HealthController.class);
 	
-	@GetMapping("/teste")
-	public void teste() {
-		log.info("teste do david");
-		log.info("teste do david 2");	
-	}
-	
 	@GetMapping
 	public HealthDTO health() {
+		log.info("running");
+		
 		HealthDTO dto = new HealthDTO();
 		
 		dto.setTimestamp(System.currentTimeMillis());

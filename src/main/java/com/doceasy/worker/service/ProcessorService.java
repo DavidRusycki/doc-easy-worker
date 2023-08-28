@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.doceasy.worker.dto.FileProcessQueueDTO;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
@@ -49,17 +51,21 @@ public class ProcessorService {
 				List<File> files = documentService.loadFiles(dto);				
 				
 				// realizar a request para junção
-				mergeService.mergeDocuments(files);
-				
-				// Receber retorno do arquivo de junção
-				log.debug("salvando conteudo da juncao");
+				File fileResult = mergeService.mergeDocuments(files);
+				files.add(fileResult);
 				
 				// Adicionar esse conteúdo no banco de dados e mudar o status do arquivo.
-				// Tem que remover os subdocumentos do banco de dados e do disco
-				log.debug("removendo subdocumentos");
+				documentService.saveDocument(dto.getUuidDocument(), fileResult);
+				
+				log.debug("removendo subdocumentos do data base");
+				documentService.deleteAllSubDocumentsFromDataBase(dto);
+				
+				log.debug("removendo arquivos temporarios");
+				documentService.deleteAllSubDocumentsFromDisk(files);
 			}
 			
-			// Mudar o status do documento no banco
+			log.debug("alterando status para finalizado");
+			documentService.finish(dto.getUuidDocument());
 			
 			result = true;
 			
@@ -72,7 +78,7 @@ public class ProcessorService {
 		return result;
 	}
 	
-	private FileProcessQueueDTO mountFromPayload(String payload) {
+	private FileProcessQueueDTO mountFromPayload(String payload) throws JsonMappingException, JsonProcessingException {
 		ObjectMapper mapper = new ObjectMapper();
 		FileProcessQueueDTO dto = mapper.readValue(payload, FileProcessQueueDTO.class);
 		log.debug("json do registro "+dto.getUuidDocument().toString()+" montado com sucesso");
