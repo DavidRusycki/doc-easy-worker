@@ -65,7 +65,7 @@ public class MergeService {
 		
 		HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
-		String serverUrl = "http://localhost:8080/pdf/merge";
+		String serverUrl = "http://localhost:8383/pdf/merge";
 
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<byte[]> response = restTemplate.postForEntity(serverUrl, requestEntity, byte[].class);
