@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -20,6 +21,9 @@ import org.springframework.web.client.RestTemplate;
 public class MergeService {
 
 	private Logger log = LoggerFactory.getLogger(ProcessorService.class);
+	
+	@Value("${user.server.url}")
+	private String serverUrl;
 	
 	/**
 	 * Realiza a junção dos arquivos 
@@ -64,8 +68,6 @@ public class MergeService {
 		body.add("config", "{}");
 		
 		HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-
-		String serverUrl = "http://localhost:8383/pdf/merge";
 
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<byte[]> response = restTemplate.postForEntity(serverUrl, requestEntity, byte[].class);
