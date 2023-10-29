@@ -101,6 +101,20 @@ public class DocumentService {
 	}
 	
 	/**
+	 * Altera o status do documento para erro ao processar.
+	 * @param uuid
+	 * @return
+	 */
+	public Boolean erro(UUID uuid) {
+		Optional<Document> optional = documentRepository.findById(uuid);
+		Document document = optional.get();
+		document.setStatus(DocumentStatusEnum.ERRO.getValue());
+		documentRepository.save(document);
+		
+		return true;
+	}
+	
+	/**
 	 * Deleta os subdocumentos do banco de dados.
 	 * @param dto
 	 * @return

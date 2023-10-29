@@ -35,39 +35,47 @@ public class ProcessorService {
 		Boolean result = false;
 		
 		try {
-			
 			FileProcessQueueDTO dto = this.mountFromPayload(payload);
 			
-			// Se apenas tivermos um arquivo não temos o que processar.
-			// Inclusive isso não deve acontecer nunca, ou seja isso nem na fila não deveria ter entrado.
-			if (dto.getListUuidSubDocuments().size() > 1) {
+			try {
 				
-				// Verifica se o documento principal existe no banco de dados.
-				if (!documentService.documentExists(dto.getUuidDocument())) {
-					throw new Exception("documento uuid: " +dto.getUuidDocument()+ " nao existe no banco de dados");
+				// Se apenas tivermos um arquivo não temos o que processar.
+				// Inclusive isso não deve acontecer nunca, ou seja isso nem na fila não deveria ter entrado.
+				if (dto.getListUuidSubDocuments().size() > 1) {
+					
+					// Verifica se o documento principal existe no banco de dados.
+					if (!documentService.documentExists(dto.getUuidDocument())) {
+						throw new Exception("documento uuid: " +dto.getUuidDocument()+ " nao existe no banco de dados");
+					}
+					
+					// buscar os arquivos
+					List<File> files = documentService.loadFiles(dto);				
+					
+					// realizar a request para junção
+					File fileResult = mergeService.mergeDocuments(files);
+					files.add(fileResult);
+					
+					// Adicionar esse conteúdo no banco de dados e mudar o status do arquivo.
+					documentService.saveDocument(dto.getUuidDocument(), fileResult);
+					
+					log.debug("removendo subdocumentos do data base");
+					documentService.deleteAllSubDocumentsFromDataBase(dto);
+					
+					log.debug("removendo arquivos temporarios");
+					documentService.deleteAllSubDocumentsFromDisk(files);
 				}
 				
-				// buscar os arquivos
-				List<File> files = documentService.loadFiles(dto);				
+				log.debug("alterando status para finalizado");
+				documentService.finish(dto.getUuidDocument());
 				
-				// realizar a request para junção
-				File fileResult = mergeService.mergeDocuments(files);
-				files.add(fileResult);
-				
-				// Adicionar esse conteúdo no banco de dados e mudar o status do arquivo.
-				documentService.saveDocument(dto.getUuidDocument(), fileResult);
-				
-				log.debug("removendo subdocumentos do data base");
-				documentService.deleteAllSubDocumentsFromDataBase(dto);
-				
-				log.debug("removendo arquivos temporarios");
-				documentService.deleteAllSubDocumentsFromDisk(files);
+				result = true;
+			} catch (Exception e) {
+				e.printStackTrace();
+				log.error(e.getMessage());
+				log.debug("alterando status para erro ao processar");
+				documentService.erro(dto.getUuidDocument());
+				result = false;
 			}
-			
-			log.debug("alterando status para finalizado");
-			documentService.finish(dto.getUuidDocument());
-			
-			result = true;
 			
 		} catch (Exception e) {
 			log.error("falha ao processar o registro da fila");
